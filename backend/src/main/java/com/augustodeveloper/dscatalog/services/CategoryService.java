@@ -10,8 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.augustodeveloper.dscatalog.dto.CategoryDTO;
 import com.augustodeveloper.dscatalog.entities.Category;
-import com.augustodeveloper.dscatalog.exceptions.EntityNotFoundException;
+import com.augustodeveloper.dscatalog.exceptions.ResourceNotFoundException;
 import com.augustodeveloper.dscatalog.repositories.CategoryRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 
 
@@ -30,7 +32,7 @@ public class CategoryService {
 	@Transactional(readOnly = true)
 	public CategoryDTO findById(Long id){
 		Optional<Category> obj = rep.findById(id);
-		Category entity = obj.orElseThrow(() -> new EntityNotFoundException("Entity not Found"));
+		Category entity = obj.orElseThrow(() -> new ResourceNotFoundException("Entity not Found"));
 		return new CategoryDTO(entity);
 	}
 	
@@ -40,6 +42,20 @@ public class CategoryService {
 		entity.setName(dto.getName());
 		entity = rep.save(entity);
 		return new CategoryDTO(entity);
+	}
+	
+	@Transactional
+	public CategoryDTO update(Long id, CategoryDTO dto) {
+		try {
+		Category entity = rep.getReferenceById(id);
+		entity.setName(dto.getName());
+		entity = rep.save(entity);
+		return new CategoryDTO(entity);
+		}
+		catch(EntityNotFoundException e) {
+			throw new ResourceNotFoundException("Id not found " + id);
+		}
+		
 	}
 	
 }
